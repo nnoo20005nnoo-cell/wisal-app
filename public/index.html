@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>نظام الوصال للتأشيرات</title>
+    <title>الوصال - نظام متابعة التأشيرات الذكي</title>
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#02A5A4">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -15,53 +15,302 @@
             --bg: #F6EFE4;
             --white: #FFFFFF;
             --text: #2C3E50;
+            --card-bg: #FFFFFF;
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: var(--bg); color: var(--text); padding-bottom: 30px; }
-        .navbar { background-color: var(--primary-dark); color: var(--white); padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 12px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 1000; }
-        .navbar-brand { display: flex; align-items: center; gap: 12px; }
-        .navbar-brand img { height: 42px; width: auto; border-radius: 6px; object-fit: contain; }
-        .navbar-brand h1 { font-size: 1.2rem; font-weight: 700; }
-        .container { max-width: 800px; margin: 20px auto; padding: 0 15px; }
-        .card { background: var(--white); border-radius: 16px; padding: 20px; margin-bottom: 20px; box-shadow: 0 8px 24px rgba(0,0,0,0.05); }
-        .card-title { font-size: 1.1rem; color: var(--primary-dark); margin-bottom: 15px; display: flex; align-items: center; gap: 8px; border-bottom: 2px solid var(--bg); padding-bottom: 10px; }
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 15px; }
-        .form-group { display: flex; flex-direction: column; gap: 6px; }
-        .form-group label { font-size: 0.9rem; font-weight: 600; }
-        .form-group input { padding: 12px; border: 1.5px solid #E0E0E0; border-radius: 10px; font-size: 0.95rem; outline: none; transition: all 0.3s; }
-        .form-group input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(2, 165, 164, 0.15); }
-        .auto-calc-box { background-color: var(--bg); padding: 10px 14px; border-radius: 10px; font-size: 0.88rem; color: var(--primary-dark); font-weight: 600; margin-top: 15px; }
-        .btn { background-color: var(--primary); color: var(--white); border: none; padding: 12px 20px; border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer; width: 100%; transition: background 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 15px; }
-        .btn:hover { background-color: var(--primary-dark); }
-        .btn-accent { background-color: var(--accent); }
-        .visa-item { background: #FAF8F5; border-right: 5px solid var(--primary); padding: 15px; border-radius: 10px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
-        .visa-info h4 { font-size: 1rem; color: var(--text); }
-        .visa-info p { font-size: 0.85rem; color: #666; margin-top: 4px; }
-        .badge { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; color: white; background-color: var(--primary); }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f4f7f6;
+            color: var(--text);
+            padding-bottom: 40px;
+        }
+
+        /* Top Bar & Header */
+        .header {
+            background: #ffffff;
+            padding: 15px 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand img {
+            height: 45px;
+            width: auto;
+            border-radius: 8px;
+        }
+
+        .brand-text h2 {
+            font-size: 1.3rem;
+            color: var(--primary-dark);
+        }
+
+        .brand-text p {
+            font-size: 0.8rem;
+            color: #777;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-top {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.9rem;
+        }
+
+        /* Hero Banner */
+        .hero {
+            background: linear-gradient(135deg, #02A5A4 0%, #025F5F 100%);
+            color: white;
+            padding: 30px 20px;
+            margin: 20px auto;
+            max-width: 1000px;
+            border-radius: 16px;
+            position: relative;
+            box-shadow: 0 8px 20px rgba(2, 165, 164, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .hero-text h1 {
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+        }
+
+        .hero-text p {
+            font-size: 0.95rem;
+            opacity: 0.9;
+        }
+
+        .btn-test {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(247, 105, 31, 0.3);
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        }
+
+        .stat-info h3 {
+            font-size: 1.6rem;
+            color: var(--primary-dark);
+        }
+
+        .stat-info p {
+            font-size: 0.85rem;
+            color: #777;
+        }
+
+        .stat-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        /* Form Card */
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+        }
+
+        .card-header {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--primary-dark);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-group label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .form-group input {
+            padding: 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            outline: none;
+            background: #fcfcfc;
+        }
+
+        .calc-preview {
+            background-color: var(--bg);
+            border-radius: 10px;
+            padding: 12px 15px;
+            margin-top: 15px;
+            color: var(--primary-dark);
+            font-size: 0.9rem;
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .btn-submit {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 15px;
+            transition: 0.3s;
+        }
+
+        .btn-submit:hover {
+            background-color: var(--primary-dark);
+        }
+
+        /* Responsive Mobile */
+        @media (max-width: 600px) {
+            .hero { flex-direction: column; text-align: center; gap: 15px; }
+            .header { flex-direction: column; gap: 10px; }
+        }
     </style>
 </head>
 <body>
 
-    <nav class="navbar">
-        <div class="navbar-brand">
-            <img src="/logo.png" alt="شعار الوصال" onerror="this.style.display='none'">
-            <h1>نظام إدارة التأشيرات - الوصال</h1>
+    <!-- Header -->
+    <header class="header">
+        <div class="brand">
+            <img src="/logo.png" alt="الوصال" onerror="this.src='https://via.placeholder.com/45?text=الوصال'">
+            <div class="brand-text">
+                <h2>الوصال</h2>
+                <p>نظام متابعة التأشيرات الذكي</p>
+            </div>
         </div>
-    </nav>
+        <div class="header-actions">
+            <button class="btn-top" onclick="Notification.requestPermission()"><i class="fa-solid fa-bell"></i> تفعيل التنبيهات</button>
+        </div>
+    </header>
 
     <div class="container">
-        <!-- Add Visa Form -->
+        <!-- Hero Section -->
+        <div class="hero">
+            <div class="hero-text">
+                <h1>كل تأشيرة في وقتها ♥</h1>
+                <p>تابعي مواعيد انتهاء التأشيرات ونظمي بيانات عملائك بسهولة وبدون تأخير</p>
+            </div>
+            <button class="btn-test" onclick="playTestSound()"><i class="fa-solid fa-paper-plane"></i> تجربة إشعار وتنبيه</button>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-info">
+                    <h3 id="totalClients">0</h3>
+                    <p>إجمالي العملاء</p>
+                </div>
+                <div class="stat-icon" style="background:#e6f7f7; color:var(--primary);"><i class="fa-solid fa-users"></i></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-info">
+                    <h3>0</h3>
+                    <p>تنتهي خلال 5 أيام</p>
+                </div>
+                <div class="stat-icon" style="background:#fff3e6; color:var(--accent);"><i class="fa-solid fa-clock"></i></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-info">
+                    <h3>0</h3>
+                    <p>تأشيرات منتهية</p>
+                </div>
+                <div class="stat-icon" style="background:#ffe6e6; color:#e74c3c;"><i class="fa-solid fa-triangle-exclamation"></i></div>
+            </div>
+        </div>
+
+        <!-- Add Visa Card -->
         <div class="card">
-            <h3 class="card-title"><i class="fa-solid fa-passport"></i> إضافة تأشيرة جديدة</h3>
+            <div class="card-header">
+                <i class="fa-solid fa-user-plus"></i> إضافة عميل جديد
+            </div>
             <form id="visaForm">
                 <div class="form-grid">
                     <div class="form-group">
                         <label>اسم العميل</label>
-                        <input type="text" id="clientName" required placeholder="أدخل اسم العميل">
+                        <input type="text" id="clientName" placeholder="أدخلي اسم العميل..." required>
                     </div>
                     <div class="form-group">
                         <label>رقم الجواز / التأشيرة</label>
-                        <input type="text" id="passportNo" required placeholder="رقم الجواز">
+                        <input type="text" id="passportNo" placeholder="رقم الجواز..." required>
                     </div>
                     <div class="form-group">
                         <label>تاريخ إصدار التأشيرة</label>
@@ -69,115 +318,53 @@
                     </div>
                     <div class="form-group">
                         <label>مدة التأشيرة (بالأيام)</label>
-                        <input type="number" id="durationDays" value="90" required placeholder="مثال: 90">
+                        <input type="number" id="durationDays" value="90" required>
                     </div>
                 </div>
 
-                <div class="auto-calc-box">
-                    <i class="fa-solid fa-calculator"></i> 
-                    تاريخ الانتهاء المتوقع: <span id="calcExpiryDate">---</span>
-                    <br>
-                    <small>🔔 موعد التنبيه (قبل الانتهاء بـ 5 أيام): <span id="calcNotifyDate">---</span></small>
+                <div class="calc-preview">
+                    <span>📅 انتهاء التأشيرة المحسوب: <strong id="calcExpiry">---</strong></span>
+                    <span>🔔 موعد التنبيه (قبل 5 أيام): <strong id="calcNotify">---</strong></span>
                 </div>
 
-                <button type="submit" class="btn btn-accent">
-                    <i class="fa-solid fa-plus"></i> حفظ وحزام سحابي مباشر
-                </button>
+                <button type="submit" class="btn-submit">+ حفظ العميل</button>
             </form>
         </div>
-
-        <!-- Visa List -->
-        <div class="card">
-            <h3 class="card-title"><i class="fa-solid fa-list-check"></i> قائمة التأشيرات المسجلة (متزامنة سحابياً)</h3>
-            <div id="visaList">
-                <p style="text-align: center; color: #888;">جاري جلب البيانات من السحابة...</p>
-            </div>
-        </div>
     </div>
+
+    <!-- Hidden Audio -->
+    <audio id="notifSound" src="/notification.mp3"></audio>
 
     <script>
         const issueDateInput = document.getElementById('issueDate');
         const durationInput = document.getElementById('durationDays');
-        const calcExpirySpan = document.getElementById('calcExpiryDate');
-        const calcNotifySpan = document.getElementById('calcNotifyDate');
-
-        // تعيين تاريخ اليوم كافتراضي لإصدار التأشيرة
+        
         issueDateInput.valueAsDate = new Date();
-        updateCalculatedDates();
+        updateDates();
 
-        function updateCalculatedDates() {
+        function updateDates() {
             if (!issueDateInput.value) return;
-            const issueDate = new Date(issueDateInput.value);
+            const issue = new Date(issueDateInput.value);
             const duration = parseInt(durationInput.value) || 0;
 
-            const expiryDate = new Date(issueDate);
-            expiryDate.setDate(expiryDate.getDate() + duration);
+            const expiry = new Date(issue);
+            expiry.setDate(expiry.getDate() + duration);
 
-            const notifyDate = new Date(expiryDate);
-            notifyDate.setDate(notifyDate.getDate() - 5);
+            const notify = new Date(expiry);
+            notify.setDate(notify.getDate() - 5);
 
-            calcExpirySpan.textContent = expiryDate.toISOString().split('T')[0];
-            calcNotifySpan.textContent = notifyDate.toISOString().split('T')[0];
+            document.getElementById('calcExpiry').textContent = expiry.toISOString().split('T')[0];
+            document.getElementById('calcNotify').textContent = notify.toISOString().split('T')[0];
         }
 
-        issueDateInput.addEventListener('change', updateCalculatedDates);
-        durationInput.addEventListener('input', updateCalculatedDates);
+        issueDateInput.addEventListener('change', updateDates);
+        durationInput.addEventListener('input', updateDates);
 
-        // جلب البيانات وعرضها
-        async function fetchVisas() {
-            try {
-                const res = await fetch('/api/visas');
-                const visas = await res.json();
-                const listContainer = document.getElementById('visaList');
-                
-                if (visas.length === 0) {
-                    listContainer.innerHTML = '<p style="text-align: center; color: #888;">لا توجد تأشيرات مسجلة حتى الآن.</p>';
-                    return;
-                }
-
-                listContainer.innerHTML = '';
-                visas.forEach(v => {
-                    listContainer.innerHTML += `
-                        <div class="visa-item">
-                            <div class="visa-info">
-                                <h4><i class="fa-solid fa-user"></i> ${v.clientName}</h4>
-                                <p>رقم الجواز: ${v.passportNo} | الإصدار: ${v.issueDate}</p>
-                                <p><small>الانتهاء: <strong>${v.expiryDate}</strong> | التنبيه: ${v.notifyDate}</small></p>
-                            </div>
-                            <span class="badge">نشط</span>
-                        </div>
-                    `;
-                });
-            } catch (err) {
-                console.error(err);
-            }
+        function playTestSound() {
+            const sound = document.getElementById('notifSound');
+            if(sound) sound.play().catch(() => {});
+            alert("🔔 تم تشغيل تنبيه التجربة!");
         }
-
-        // إرسال البيانات الجديدة للسحابة
-        document.getElementById('visaForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const data = {
-                clientName: document.getElementById('clientName').value,
-                passportNo: document.getElementById('passportNo').value,
-                issueDate: issueDateInput.value,
-                durationDays: durationInput.value
-            };
-
-            const res = await fetch('/api/visas', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            });
-
-            if (res.ok) {
-                document.getElementById('visaForm').reset();
-                issueDateInput.valueAsDate = new Date();
-                updateCalculatedDates();
-                fetchVisas();
-            }
-        });
-
-        fetchVisas();
     </script>
 </body>
 </html>
