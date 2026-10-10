@@ -121,11 +121,6 @@ app.delete('/api/visas/:id', async (req, res) => {
     }
 });
 
-// Serve frontend SPA fallback safely
-app.get('(.*)', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
 // Start Server
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
