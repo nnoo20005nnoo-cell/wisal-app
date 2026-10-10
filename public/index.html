@@ -2,290 +2,436 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>الوصال - نظام متابعة التأشيرات الذكي</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تطبيق الوصال - إدارة التأشيرات</title>
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#02A5A4">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- CDN لضمان تحميل Socket.io دائماً بدون مشاكل 404 -->
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <!-- CDN لتوليد QR Code -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script src="/socket.io/socket.io.js"></script>
     <style>
         :root {
             --primary: #02A5A4;
             --primary-dark: #025F5F;
             --accent: #F7691F;
             --bg: #F6EFE4;
-            --white: #FFFFFF;
-            --text: #2C3E50;
+            --card-bg: #FFFFFF;
+            --text: #2D3748;
+            --danger: #E53E3E;
+            --warning: #DD6B20;
+            --success: #38A169;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: #f4f7f6; color: var(--text); padding-bottom: 50px; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
 
-        /* Header */
-        .header { background: #ffffff; padding: 15px 30px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .brand { display: flex; align-items: center; gap: 12px; }
-        .brand img { height: 45px; width: auto; border-radius: 8px; }
-        .brand-text h2 { font-size: 1.3rem; color: var(--primary-dark); }
-        .brand-text p { font-size: 0.8rem; color: #777; }
-        .header-actions { display: flex; gap: 10px; }
-        .btn-top { background-color: var(--primary); color: white; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 0.9rem; }
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            padding: 20px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
 
-        /* Hero Banner */
-        .hero { background: linear-gradient(135deg, #02A5A4 0%, #025F5F 100%); color: white; padding: 30px 20px; margin: 20px auto; max-width: 1000px; border-radius: 16px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 8px 20px rgba(2, 165, 164, 0.2); }
-        .hero-text h1 { font-size: 1.8rem; margin-bottom: 8px; }
-        .hero-text p { font-size: 0.95rem; opacity: 0.9; }
-        .btn-test { background-color: var(--accent); color: white; border: none; padding: 12px 20px; border-radius: 10px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(247, 105, 31, 0.3); }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin-bottom: 25px;
+        }
 
-        .container { max-width: 1000px; margin: 0 auto; padding: 0 15px; }
+        header h1 {
+            color: var(--primary-dark);
+            font-size: 1.6rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
 
-        /* Stats Grid */
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 25px; }
-        .stat-card { background: white; padding: 20px; border-radius: 14px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
-        .stat-info h3 { font-size: 1.6rem; color: var(--primary-dark); }
-        .stat-info p { font-size: 0.85rem; color: #777; }
-        .stat-icon { width: 45px; height: 45px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
 
-        /* Card Form */
-        .card { background: white; border-radius: 16px; padding: 25px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.04); }
-        .card-header { font-size: 1.1rem; font-weight: bold; color: var(--primary-dark); margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+        .stat-card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; }
-        .form-group { display: flex; flex-direction: column; gap: 6px; }
-        .form-group label { font-size: 0.85rem; font-weight: 600; color: #555; }
-        .form-group input { padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px; outline: none; background: #fcfcfc; }
+        .stat-card h3 {
+            font-size: 0.9rem;
+            color: #718096;
+            margin-bottom: 5px;
+        }
 
-        .calc-preview { background-color: var(--bg); border-radius: 10px; padding: 12px 15px; margin-top: 15px; color: var(--primary-dark); font-size: 0.9rem; display: flex; justify-content: space-around; flex-wrap: wrap; gap: 10px; }
-        .btn-submit { background-color: var(--primary); color: white; border: none; padding: 14px; border-radius: 10px; font-size: 1rem; font-weight: bold; cursor: pointer; width: 100%; margin-top: 15px; transition: 0.3s; }
-        .btn-submit:hover { background-color: var(--primary-dark); }
+        .stat-card .number {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--primary-dark);
+        }
 
-        /* Table */
-        .visa-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        .visa-table th, .visa-table td { padding: 12px; text-align: right; border-bottom: 1px solid #eee; font-size: 0.9rem; }
-        .visa-table th { background-color: #fafafa; color: var(--primary-dark); }
-        .badge { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; color: white; background-color: var(--primary); }
+        .card {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin-bottom: 25px;
+        }
 
-        /* Modal */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 2000; }
-        .modal-content { background: white; padding: 25px; border-radius: 16px; text-align: center; max-width: 320px; width: 90%; }
-        #qrcode { margin: 15px auto; display: flex; justify-content: center; }
+        .card-title {
+            font-size: 1.2rem;
+            color: var(--primary-dark);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
 
-        @media (max-width: 600px) {
-            .hero { flex-direction: column; text-align: center; gap: 15px; }
-            .header { flex-direction: column; gap: 10px; }
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        label {
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: #4A5568;
+        }
+
+        input, select {
+            padding: 10px 12px;
+            border: 1px solid #CBD5E0;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            border-color: var(--primary);
+        }
+
+        .calculated-box {
+            grid-column: 1 / -1;
+            background: #EDF2F7;
+            padding: 12px 15px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-around;
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: #2D3748;
+        }
+
+        button.btn-primary {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+            width: 100%;
+            margin-top: 15px;
+        }
+
+        button.btn-primary:hover {
+            background-color: var(--primary-dark);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: right;
+            border-bottom: 1px solid #E2E8F0;
+            font-size: 0.9rem;
+        }
+
+        th {
+            background-color: #EDF2F7;
+            color: #4A5568;
+        }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            display: inline-block;
+        }
+
+        .badge-active { background: #C6F6D5; color: #22543D; }
+        .badge-warning { background: #FEEBC8; color: #742A2A; }
+        .badge-expired { background: #FED7D7; color: #9B2C2C; }
+
+        .btn-delete {
+            background: var(--danger);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        #qrModal {
+            display: none;
+            position: fixed;
+            top:0; left:0; width:100%; height:100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
         }
     </style>
 </head>
 <body>
 
-    <!-- Header -->
-    <header class="header">
-        <div class="brand">
-            <img src="/logo.png" alt="الوصال" onerror="this.src='https://via.placeholder.com/45?text=الوصال'">
-            <div class="brand-text">
-                <h2>الوصال</h2>
-                <p>نظام متابعة التأشيرات الذكي</p>
-            </div>
-        </div>
-        <div class="header-actions">
-            <button class="btn-top" onclick="showQRCode()"><i class="fa-solid fa-qrcode"></i> ربط الجوال</button>
-            <button class="btn-top" onclick="Notification.requestPermission()"><i class="fa-solid fa-bell"></i> تفعيل التنبيهات</button>
-        </div>
+    <header>
+        <h1>🌐 تطبيق الوصال - إدارة التأشيرات</h1>
+        <button onclick="showQRCode()" style="background:none; border:1px solid var(--primary); color:var(--primary); padding:6px 12px; border-radius:6px; cursor:pointer;">📱 فتح بالجوال</button>
     </header>
 
-    <div class="container">
-        <!-- Hero Section -->
-        <div class="hero">
-            <div class="hero-text">
-                <h1>كل تأشيرة في وقتها ♥</h1>
-                <p>تابعي مواعيد انتهاء التأشيرات ونظمي بيانات عملائك بسهولة وبدون تأخير</p>
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div>
+                <h3>إجمالي العملاء</h3>
+                <div class="number" id="totalClients">0</div>
             </div>
-            <button class="btn-test" onclick="playTestSound()"><i class="fa-solid fa-paper-plane"></i> تجربة إشعار وتنبيه</button>
+            <span style="font-size:2rem;">👥</span>
         </div>
-
-        <!-- Stats Grid -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-info">
-                    <h3 id="totalClients">0</h3>
-                    <p>إجمالي العملاء</p>
-                </div>
-                <div class="stat-icon" style="background:#e6f7f7; color:var(--primary);"><i class="fa-solid fa-users"></i></div>
+        <div class="stat-card">
+            <div>
+                <h3>تنتهي خلال 5 أيام</h3>
+                <div class="number" id="warningVisas" style="color:var(--warning);">0</div>
             </div>
-            <div class="stat-card">
-                <div class="stat-info">
-                    <h3 id="warningCount">0</h3>
-                    <p>تنتهي خلال 5 أيام</p>
-                </div>
-                <div class="stat-icon" style="background:#fff3e6; color:var(--accent);"><i class="fa-solid fa-clock"></i></div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-info">
-                    <h3 id="expiredCount">0</h3>
-                    <p>تأشيرات منتهية</p>
-                </div>
-                <div class="stat-icon" style="background:#ffe6e6; color:#e74c3c;"><i class="fa-solid fa-triangle-exclamation"></i></div>
-            </div>
+            <span style="font-size:2rem;">⏰</span>
         </div>
-
-        <!-- Add Visa Form Card -->
-        <div class="card">
-            <div class="card-header">
-                <i class="fa-solid fa-user-plus"></i> إضافة عميل جديد
+        <div class="stat-card">
+            <div>
+                <h3>تأشيرات منتهية</h3>
+                <div class="number" id="expiredVisas" style="color:var(--danger);">0</div>
             </div>
-            <form id="visaForm">
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label>اسم العميل</label>
-                        <input type="text" id="clientName" placeholder="أدخلي اسم العميل..." required>
-                    </div>
-                    <div class="form-group">
-                        <label>رقم الجواز / التأشيرة</label>
-                        <input type="text" id="passportNo" placeholder="رقم الجواز..." required>
-                    </div>
-                    <div class="form-group">
-                        <label>تاريخ إصدار التأشيرة</label>
-                        <input type="date" id="issueDate" required>
-                    </div>
-                    <div class="form-group">
-                        <label>مدة التأشيرة (بالأيام)</label>
-                        <input type="number" id="durationDays" value="90" required>
-                    </div>
-                </div>
-
-                <div class="calc-preview">
-                    <span>📅 انتهاء التأشيرة المحسوب: <strong id="calcExpiry">---</strong></span>
-                    <span>🔔 موعد التنبيه (قبل 5 أيام): <strong id="calcNotify">---</strong></span>
-                </div>
-
-                <button type="submit" class="btn-submit">+ حفظ العميل</button>
-            </form>
-        </div>
-
-        <!-- Visa Records Table Card -->
-        <div class="card">
-            <div class="card-header">
-                <i class="fa-solid fa-address-book"></i> سجل العملاء والتأشيرات (مزامنة فورية ⚡)
-            </div>
-            <div style="overflow-x: auto;">
-                <table class="visa-table">
-                    <thead>
-                        <tr>
-                            <th>العميل</th>
-                            <th>رقم الجواز</th>
-                            <th>تاريخ الإصدار</th>
-                            <th>تاريخ الانتهاء</th>
-                            <th>تاريخ التنبيه</th>
-                            <th>الحالة</th>
-                        </tr>
-                    </thead>
-                    <tbody id="visaTableBody">
-                        <tr><td colspan="6" style="text-align:center; color:#888;">جاري جلب البيانات من السحابة...</td></tr>
-                    </tbody>
-                </table>
-            </div>
+            <span style="font-size:2rem;">⚠️</span>
         </div>
     </div>
 
-    <!-- QR Modal -->
-    <div id="qrModal" class="modal">
-        <div class="modal-content">
-            <h3>امسحي الباركود بالجوال</h3>
-            <p style="font-size: 0.85rem; color: #666; margin-top: 5px;">افتحي الكاميرا لفتح الموقع فوراً على جوالكِ</p>
+    <div class="card">
+        <h2 class="card-title">➕ إضافة عميل جديد</h2>
+        <form id="visaForm">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>اسم العميل</label>
+                    <input type="text" id="clientName" placeholder="أدخلي اسم العميل..." required>
+                </div>
+                <div class="form-group">
+                    <label>رقم الجواز / التأشيرة</label>
+                    <input type="text" id="passportNumber" placeholder="رقم الجواز..." required>
+                </div>
+                <div class="form-group">
+                    <label>تاريخ إصدار التأشيرة</label>
+                    <input type="date" id="issueDate" required onchange="calculateDates()">
+                </div>
+                <div class="form-group">
+                    <label>مدة التأشيرة (بالأيام)</label>
+                    <input type="number" id="durationDays" value="90" required onchange="calculateDates()">
+                </div>
+                <div class="calculated-box">
+                    <div>📅 انتهاء التأشيرة المحسوب: <span id="calcExpiry">---</span></div>
+                    <div>🔔 موعد التنبيه (قبل 5 أيام): <span id="calcAlert">---</span></div>
+                </div>
+            </div>
+            <button type="submit" class="btn-primary">+ حفظ العميل</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h2 class="card-title">📋 سجل العملاء والتأشيرات (مزامنة فورية ⚡)</h2>
+        <div style="overflow-x:auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>العميل</th>
+                        <th>رقم الجواز</th>
+                        <th>تاريخ الإصدار</th>
+                        <th>تاريخ الانتهاء</th>
+                        <th>تاريخ التنبيه</th>
+                        <th>الحالة</th>
+                        <th>إجراء</th>
+                    </tr>
+                </thead>
+                <tbody id="visaTableBody">
+                    <tr><td colspan="7" style="text-align:center;">جاري جلب البيانات...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal QR Code -->
+    <div id="qrModal" onclick="this.style.display='none'">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <h3>مسح الرمز للفتح على الجوال</h3>
             <div id="qrcode"></div>
-            <button class="btn-submit" style="margin-top:10px; background:#e74c3c;" onclick="closeQRCode()">إغلاق</button>
+            <button onclick="document.getElementById('qrModal').style.display='none'" class="btn-delete">إغلاق</button>
         </div>
     </div>
-
-    <audio id="notifSound" src="/notification.mp3"></audio>
 
     <script>
-        const socket = io(); // المزامنة اللحظية عبر السوكت
-        const issueDateInput = document.getElementById('issueDate');
-        const durationInput = document.getElementById('durationDays');
-        
-        issueDateInput.valueAsDate = new Date();
-        updateDates();
+        const socket = io();
+        let visasData = [];
 
-        function updateDates() {
-            if (!issueDateInput.value) return;
-            const issue = new Date(issueDateInput.value);
-            const duration = parseInt(durationInput.value) || 0;
+        // Calculate dynamic dates
+        function calculateDates() {
+            const issueDateVal = document.getElementById('issueDate').value;
+            const duration = parseInt(document.getElementById('durationDays').value) || 90;
 
+            if (!issueDateVal) return;
+
+            const issue = new Date(issueDateVal);
             const expiry = new Date(issue);
             expiry.setDate(expiry.getDate() + duration);
 
-            const notify = new Date(expiry);
-            notify.setDate(notify.getDate() - 5);
+            const alertDate = new Date(expiry);
+            alertDate.setDate(alertDate.getDate() - 5);
 
-            document.getElementById('calcExpiry').textContent = expiry.toISOString().split('T')[0];
-            document.getElementById('calcNotify').textContent = notify.toISOString().split('T')[0];
+            document.getElementById('calcExpiry').innerText = expiry.toISOString().split('T')[0];
+            document.getElementById('calcAlert').innerText = alertDate.toISOString().split('T')[0];
         }
 
-        issueDateInput.addEventListener('change', updateDates);
-        durationInput.addEventListener('input', updateDates);
-
-        // Fetch & Render Records
-        async function loadVisas() {
+        // Fetch Initial Visas
+        async function fetchVisas() {
             try {
                 const res = await fetch('/api/visas');
-                const visas = await res.json();
-                const tbody = document.getElementById('visaTableBody');
-
-                document.getElementById('totalClients').textContent = visas.length;
-
-                if (visas.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#888;">لا يوجد عملاء مسجلين حالياً.</td></tr>';
-                    return;
-                }
-
-                tbody.innerHTML = '';
-                visas.forEach(v => {
-                    tbody.innerHTML += `
-                        <tr>
-                            <td><strong>${v.clientName}</strong></td>
-                            <td>${v.passportNo}</td>
-                            <td>${v.issueDate}</td>
-                            <td>${v.expiryDate}</td>
-                            <td>${v.notifyDate}</td>
-                            <td><span class="badge">مفعل</span></td>
-                        </tr>
-                    `;
-                });
+                visasData = await res.json();
+                renderTable();
             } catch (err) {
-                console.error(err);
+                console.error('Error:', err);
+                document.getElementById('visaTableBody').innerHTML = '<tr><td colspan="7" style="text-align:center; color:red;">خطأ في الاتصال بالخادم</td></tr>';
             }
         }
 
-        // الاستماع للمزامنة اللحظية من السيرفر (إذا عدل شخص في جوال آخر يتحدث هنا فوراً)
-        socket.on('visaUpdated', () => {
-            loadVisas();
-        });
+        // Render Table & Update Statistics
+        function renderTable() {
+            const tbody = document.getElementById('visaTableBody');
+            tbody.innerHTML = '';
 
-        // Save New Client
+            let total = visasData.length;
+            let warning = 0;
+            let expired = 0;
+
+            if (total === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">لا توجد تأشيرات مسجلة حتى الآن</td></tr>';
+            } else {
+                visasData.forEach(v => {
+                    if (v.status === 'منتهية') expired++;
+                    if (v.status === 'قريبة من الانتهاء') warning++;
+
+                    let badgeClass = 'badge-active';
+                    if (v.status === 'منتهية') badgeClass = 'badge-expired';
+                    if (v.status === 'قريبة من الانتهاء') badgeClass = 'badge-warning';
+
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td><strong>${v.clientName}</strong></td>
+                        <td>${v.passportNumber}</td>
+                        <td>${v.issueDate}</td>
+                        <td>${v.expiryDate}</td>
+                        <td>${v.alertDate}</td>
+                        <td><span class="badge ${badgeClass}">${v.status}</span></td>
+                        <td><button class="btn-delete" onclick="deleteVisa('${v._id}')">حذف</button></td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+
+            document.getElementById('totalClients').innerText = total;
+            document.getElementById('warningVisas').innerText = warning;
+            document.getElementById('expiredVisas').innerText = expired;
+        }
+
+        // Form Submit
         document.getElementById('visaForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const payload = {
-                clientName: document.getElementById('clientName').value,
-                passportNo: document.getElementById('passportNo').value,
-                issueDate: issueDateInput.value,
-                durationDays: durationInput.value
-            };
+
+            const clientName = document.getElementById('clientName').value;
+            const passportNumber = document.getElementById('passportNumber').value;
+            const issueDate = document.getElementById('issueDate').value;
+            const durationDays = document.getElementById('durationDays').value;
+            const expiryDate = document.getElementById('calcExpiry').innerText;
+            const alertDate = document.getElementById('calcAlert').innerText;
 
             const res = await fetch('/api/visas', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
+                body: JSON.stringify({ clientName, passportNumber, issueDate, durationDays, expiryDate, alertDate })
             });
 
             if (res.ok) {
                 document.getElementById('visaForm').reset();
-                issueDateInput.valueAsDate = new Date();
-                updateDates();
-                loadVisas();
+                document.getElementById('calcExpiry').innerText = '---';
+                document.getElementById('calcAlert').innerText = '---';
             }
         });
 
+        // Delete Visa
+        async function deleteVisa(id) {
+            if (confirm('هل أنتِ متأكدة من حذف هذه التأشيرة؟')) {
+                await fetch(`/api/visas/${id}`, { method: 'DELETE' });
+            }
+        }
+
+        // Socket.io Realtime Listeners
+        socket.on('visaAdded', (newVisa) => {
+            visasData.unshift(newVisa);
+            renderTable();
+        });
+
+        socket.on('visaDeleted', (id) => {
+            visasData = visasData.filter(v => v._id !== id);
+            renderTable();
+        });
+
+        // QR Code Generator Modal
         function showQRCode() {
             document.getElementById('qrcode').innerHTML = '';
             new QRCode(document.getElementById('qrcode'), {
@@ -296,17 +442,8 @@
             document.getElementById('qrModal').style.display = 'flex';
         }
 
-        function closeQRCode() {
-            document.getElementById('qrModal').style.display = 'none';
-        }
-
-        function playTestSound() {
-            const sound = document.getElementById('notifSound');
-            if(sound) sound.play().catch(() => {});
-            alert("🔔 تم اختبار صوت التنبيه بنجاح!");
-        }
-
-        loadVisas();
+        // Initial Load
+        fetchVisas();
     </script>
 </body>
 </html>
