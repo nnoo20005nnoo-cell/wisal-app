@@ -64,7 +64,6 @@ function calculateStatus(expiryDateStr) {
 app.get('/api/visas', async (req, res) => {
     try {
         const visas = await Visa.find().sort({ createdAt: -1 });
-        // Refresh statuses
         const updatedVisas = visas.map(v => {
             const currentStatus = calculateStatus(v.expiryDate);
             if (v.status !== currentStatus) {
@@ -122,8 +121,8 @@ app.delete('/api/visas/:id', async (req, res) => {
     }
 });
 
-// Catch-all route for PWA single-page application
-app.get('*', (req, res) => {
+// Serve frontend SPA fallback safely
+app.get('(.*)', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
