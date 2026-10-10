@@ -7,6 +7,7 @@
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#02A5A4">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         :root {
             --primary: #02A5A4;
@@ -15,231 +16,59 @@
             --bg: #F6EFE4;
             --white: #FFFFFF;
             --text: #2C3E50;
-            --card-bg: #FFFFFF;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f4f7f6; color: var(--text); padding-bottom: 50px; }
 
-        body {
-            background-color: #f4f7f6;
-            color: var(--text);
-            padding-bottom: 40px;
-        }
+        /* Header */
+        .header { background: #ffffff; padding: 15px 30px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .brand { display: flex; align-items: center; gap: 12px; }
+        .brand img { height: 45px; width: auto; border-radius: 8px; }
+        .brand-text h2 { font-size: 1.3rem; color: var(--primary-dark); }
+        .brand-text p { font-size: 0.8rem; color: #777; }
+        .header-actions { display: flex; gap: 10px; }
+        .btn-top { background-color: var(--primary); color: white; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 0.9rem; }
 
-        /* Top Bar & Header */
-        .header {
-            background: #ffffff;
-            padding: 15px 30px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        }
+        /* Hero */
+        .hero { background: linear-gradient(135deg, #02A5A4 0%, #025F5F 100%); color: white; padding: 30px 20px; margin: 20px auto; max-width: 1000px; border-radius: 16px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 8px 20px rgba(2, 165, 164, 0.2); }
+        .hero-text h1 { font-size: 1.8rem; margin-bottom: 8px; }
+        .hero-text p { font-size: 0.95rem; opacity: 0.9; }
+        .btn-test { background-color: var(--accent); color: white; border: none; padding: 12px 20px; border-radius: 10px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(247, 105, 31, 0.3); }
 
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
+        .container { max-width: 1000px; margin: 0 auto; padding: 0 15px; }
 
-        .brand img {
-            height: 45px;
-            width: auto;
-            border-radius: 8px;
-        }
+        /* Stats */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .stat-card { background: white; padding: 20px; border-radius: 14px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
+        .stat-info h3 { font-size: 1.6rem; color: var(--primary-dark); }
+        .stat-info p { font-size: 0.85rem; color: #777; }
+        .stat-icon { width: 45px; height: 45px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
 
-        .brand-text h2 {
-            font-size: 1.3rem;
-            color: var(--primary-dark);
-        }
+        /* Cards */
+        .card { background: white; border-radius: 16px; padding: 25px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.04); }
+        .card-header { font-size: 1.1rem; font-weight: bold; color: var(--primary-dark); margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
 
-        .brand-text p {
-            font-size: 0.8rem;
-            color: #777;
-        }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; }
+        .form-group { display: flex; flex-direction: column; gap: 6px; }
+        .form-group label { font-size: 0.85rem; font-weight: 600; color: #555; }
+        .form-group input { padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px; outline: none; background: #fcfcfc; }
 
-        .header-actions {
-            display: flex;
-            gap: 10px;
-        }
+        .calc-preview { background-color: var(--bg); border-radius: 10px; padding: 12px 15px; margin-top: 15px; color: var(--primary-dark); font-size: 0.9rem; display: flex; justify-content: space-around; flex-wrap: wrap; gap: 10px; }
+        .btn-submit { background-color: var(--primary); color: white; border: none; padding: 14px; border-radius: 10px; font-size: 1rem; font-weight: bold; cursor: pointer; width: 100%; margin-top: 15px; transition: 0.3s; }
+        .btn-submit:hover { background-color: var(--primary-dark); }
 
-        .btn-top {
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 0.9rem;
-        }
+        /* Table */
+        .visa-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        .visa-table th, .visa-table td { padding: 12px; text-align: right; border-bottom: 1px solid #eee; font-size: 0.9rem; }
+        .visa-table th { background-color: #fafafa; color: var(--primary-dark); }
+        .badge { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; color: white; background-color: var(--primary); }
 
-        /* Hero Banner */
-        .hero {
-            background: linear-gradient(135deg, #02A5A4 0%, #025F5F 100%);
-            color: white;
-            padding: 30px 20px;
-            margin: 20px auto;
-            max-width: 1000px;
-            border-radius: 16px;
-            position: relative;
-            box-shadow: 0 8px 20px rgba(2, 165, 164, 0.2);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+        /* Modal QR */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 2000; }
+        .modal-content { background: white; padding: 25px; border-radius: 16px; text-align: center; max-width: 320px; width: 90%; }
+        #qrcode { margin: 15px auto; display: flex; justify-content: center; }
 
-        .hero-text h1 {
-            font-size: 1.8rem;
-            margin-bottom: 8px;
-        }
-
-        .hero-text p {
-            font-size: 0.95rem;
-            opacity: 0.9;
-        }
-
-        .btn-test {
-            background-color: var(--accent);
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 10px;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 4px 10px rgba(247, 105, 31, 0.3);
-        }
-
-        /* Main Container */
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 0 15px;
-        }
-
-        /* Stats Cards */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 15px;
-            margin-bottom: 25px;
-        }
-
-        .stat-card {
-            background: white;
-            padding: 20px;
-            border-radius: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-        }
-
-        .stat-info h3 {
-            font-size: 1.6rem;
-            color: var(--primary-dark);
-        }
-
-        .stat-info p {
-            font-size: 0.85rem;
-            color: #777;
-        }
-
-        .stat-icon {
-            width: 45px;
-            height: 45px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-        }
-
-        /* Form Card */
-        .card {
-            background: white;
-            border-radius: 16px;
-            padding: 25px;
-            margin-bottom: 25px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.04);
-        }
-
-        .card-header {
-            font-size: 1.1rem;
-            font-weight: bold;
-            color: var(--primary-dark);
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 15px;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .form-group label {
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: #555;
-        }
-
-        .form-group input {
-            padding: 12px;
-            border: 1px solid #e2e8f0;
-            border-radius: 10px;
-            outline: none;
-            background: #fcfcfc;
-        }
-
-        .calc-preview {
-            background-color: var(--bg);
-            border-radius: 10px;
-            padding: 12px 15px;
-            margin-top: 15px;
-            color: var(--primary-dark);
-            font-size: 0.9rem;
-            display: flex;
-            justify-content: space-around;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .btn-submit {
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            padding: 14px;
-            border-radius: 10px;
-            font-size: 1rem;
-            font-weight: bold;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 15px;
-            transition: 0.3s;
-        }
-
-        .btn-submit:hover {
-            background-color: var(--primary-dark);
-        }
-
-        /* Responsive Mobile */
         @media (max-width: 600px) {
             .hero { flex-direction: column; text-align: center; gap: 15px; }
             .header { flex-direction: column; gap: 10px; }
@@ -258,6 +87,7 @@
             </div>
         </div>
         <div class="header-actions">
+            <button class="btn-top" onclick="showQRCode()"><i class="fa-solid fa-qrcode"></i> ربط الجوال</button>
             <button class="btn-top" onclick="Notification.requestPermission()"><i class="fa-solid fa-bell"></i> تفعيل التنبيهات</button>
         </div>
     </header>
@@ -283,21 +113,21 @@
             </div>
             <div class="stat-card">
                 <div class="stat-info">
-                    <h3>0</h3>
+                    <h3 id="warningCount">0</h3>
                     <p>تنتهي خلال 5 أيام</p>
                 </div>
                 <div class="stat-icon" style="background:#fff3e6; color:var(--accent);"><i class="fa-solid fa-clock"></i></div>
             </div>
             <div class="stat-card">
                 <div class="stat-info">
-                    <h3>0</h3>
+                    <h3 id="expiredCount">0</h3>
                     <p>تأشيرات منتهية</p>
                 </div>
                 <div class="stat-icon" style="background:#ffe6e6; color:#e74c3c;"><i class="fa-solid fa-triangle-exclamation"></i></div>
             </div>
         </div>
 
-        <!-- Add Visa Card -->
+        <!-- Add Visa Form Card -->
         <div class="card">
             <div class="card-header">
                 <i class="fa-solid fa-user-plus"></i> إضافة عميل جديد
@@ -330,9 +160,42 @@
                 <button type="submit" class="btn-submit">+ حفظ العميل</button>
             </form>
         </div>
+
+        <!-- Visa Records Table Card -->
+        <div class="card">
+            <div class="card-header">
+                <i class="fa-solid fa-address-book"></i> سجل العملاء والتأشيرات
+            </div>
+            <div style="overflow-x: auto;">
+                <table class="visa-table">
+                    <thead>
+                        <tr>
+                            <th>العميل</th>
+                            <th>رقم الجواز</th>
+                            <th>تاريخ الإصدار</th>
+                            <th>تاريخ الانتهاء</th>
+                            <th>تاريخ التنبيه</th>
+                            <th>الحالة</th>
+                        </tr>
+                    </thead>
+                    <tbody id="visaTableBody">
+                        <tr><td colspan="6" style="text-align:center; color:#888;">جاري تحميل السجل سحابياً...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
-    <!-- Hidden Audio -->
+    <!-- QR Modal -->
+    <div id="qrModal" class="modal">
+        <div class="modal-content">
+            <h3>امسحي الباركود بالجوال</h3>
+            <p style="font-size: 0.85rem; color: #666; margin-top: 5px;">افتحي الكاميرا لفتح الموقع فوراً على جوالكِ</p>
+            <div id="qrcode"></div>
+            <button class="btn-submit" style="margin-top:10px; background:#e74c3c;" onclick="closeQRCode()">إغلاق</button>
+        </div>
+    </div>
+
     <audio id="notifSound" src="/notification.mp3"></audio>
 
     <script>
@@ -360,11 +223,85 @@
         issueDateInput.addEventListener('change', updateDates);
         durationInput.addEventListener('input', updateDates);
 
+        // Fetch & Display Records
+        async function loadVisas() {
+            try {
+                const res = await fetch('/api/visas');
+                const visas = await res.json();
+                const tbody = document.getElementById('visaTableBody');
+
+                document.getElementById('totalClients').textContent = visas.length;
+
+                if (visas.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#888;">لا يوجد عملاء مسجلين حالياً.</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = '';
+                visas.forEach(v => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><strong>${v.clientName}</strong></td>
+                            <td>${v.passportNo}</td>
+                            <td>${v.issueDate}</td>
+                            <td>${v.expiryDate}</td>
+                            <td>${v.notifyDate}</td>
+                            <td><span class="badge">مفعل</span></td>
+                        </tr>
+                    `;
+                });
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        // Save New Client
+        document.getElementById('visaForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const payload = {
+                clientName: document.getElementById('clientName').value,
+                passportNo: document.getElementById('passportNo').value,
+                issueDate: issueDateInput.value,
+                durationDays: durationInput.value
+            };
+
+            const res = await fetch('/api/visas', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                alert("✅ تم حفظ العميل والتأشيرة بنجاح!");
+                document.getElementById('visaForm').reset();
+                issueDateInput.valueAsDate = new Date();
+                updateDates();
+                loadVisas();
+            }
+        });
+
+        // QR Code Generator
+        function showQRCode() {
+            document.getElementById('qrcode').innerHTML = '';
+            new QRCode(document.getElementById('qrcode'), {
+                text: window.location.href,
+                width: 180,
+                height: 180
+            });
+            document.getElementById('qrModal').style.display = 'flex';
+        }
+
+        function closeQRCode() {
+            document.getElementById('qrModal').style.display = 'none';
+        }
+
         function playTestSound() {
             const sound = document.getElementById('notifSound');
             if(sound) sound.play().catch(() => {});
-            alert("🔔 تم تشغيل تنبيه التجربة!");
+            alert("🔔 تم اختبار صوت التنبيه بنجاح!");
         }
+
+        loadVisas();
     </script>
 </body>
 </html>
