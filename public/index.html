@@ -412,7 +412,7 @@
         const socket = io();
         let visasData = [];
 
-        // طلب إذن الإشعارات من المتصفح (للجوال أو اللابتوب)
+        // طلب إذن الإشعارات من المتصفح
         function requestNotificationPermission() {
             if (!("Notification" in window)) {
                 alert("متصفحك لا يدعم الإشعارات المنبثقة");
@@ -421,8 +421,7 @@
             Notification.requestPermission().then(permission => {
                 if (permission === "granted") {
                     new Notification("تطبيق الوصال", {
-                        body: "تم تفعيل الإشعارات بنجاح! سنقوم بتنبيهك عند قرب انتهاء التأشيرات.",
-                        icon: "https://cdn-icons-png.flaticon.com/512/1055/1055687.png"
+                        body: "تم تفعيل الإشعارات بنجاح! سنقوم بتنبيهك عند قرب انتهاء التأشيرات."
                     });
                 } else {
                     alert("يرجى السماح بالإشعارات من إعدادات المتصفح لكي تصلك التنبيهات.");
@@ -430,13 +429,12 @@
             });
         }
 
-        // فحص وإرسال إشعار إذا وجدت تأشيرات قريبة من الانتهاء
+        // إرسال إشعار فوري إذا وُجدت حالات تستدعي الانتباه
         function checkAlertsForNotifications(warningCount, expiredCount) {
             if (Notification.permission === "granted" && (warningCount > 0 || expiredCount > 0)) {
                 if (warningCount > 0) {
                     new Notification("⚠️ تنبيه هام من تطبيق الوصال", {
-                        body: `يوجد عدد (${warningCount}) من التأشيرات قرب موعد انتهائها خلال 5 أيام!`,
-                        icon: "https://cdn-icons-png.flaticon.com/512/564/564619.png"
+                        body: `يوجد عدد (${warningCount}) من التأشيرات قريبة من الانتهاء خلال 5 أيام!`
                     });
                 }
             }
@@ -510,7 +508,6 @@
             document.getElementById('warningVisas').innerText = warning;
             document.getElementById('expiredVisas').innerText = expired;
 
-            // إطلاق إشعار متصفح إذا وُجدت حالات تستدعي الانتباه
             checkAlertsForNotifications(warning, expired);
         }
 
@@ -554,6 +551,11 @@
         socket.on('visaDeleted', (id) => {
             visasData = visasData.filter(v => v._id !== id);
             renderTable();
+        });
+
+        // استماع للتنبيهات القادمة من السيرفر في الخلفية
+        socket.on('dailyAlertNotification', (data) => {
+            console.log(data.message);
         });
 
         // QR Code Generator Modal
