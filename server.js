@@ -24,11 +24,10 @@ mongoose.connect(MONGO_URI)
     .then(() => console.log('✅ Connected successfully to MongoDB Atlas'))
     .catch((err) => console.error('❌ MongoDB Connection Error:', err));
 
-// Mongoose Schema & Model (محدث ليشمل الحقول الأربعة الجديدة)
+// Mongoose Schema & Model (متوافق تماماً مع الحقول الجديدة)
 const visaSchema = new mongoose.Schema({
     clientName: { type: String, required: true },
     passportNumber: { type: String, required: true },
-    agencyName: { type: String, default: '' },
     clientPhone: { type: String, default: '' },
     hostPhone: { type: String, default: '' },
     agencyReply: { type: String, default: '' },
@@ -45,7 +44,6 @@ const Visa = mongoose.model('Visa', visaSchema);
 io.on('connection', (socket) => {
     console.log('⚡ A user connected to WebSocket:', socket.id);
     
-    // إرسال تنبيه فوري للمستخدم بمجرد الاتصال إذا كان هناك تأشيرات تحتاج انتباهه
     checkAndSendAlerts();
 
     socket.on('disconnect', () => {
@@ -85,26 +83,22 @@ async function checkAndSendAlerts() {
             if (currentStatus === 'منتهية') expiredVisas.push(v);
         }
 
-        // إذا وُجدت تأشيرات تحتاج تنبيه، يتم بث إشعار حي فوراً عبر WebSocket
         if (warningVisas.length > 0 || expiredVisas.length > 0) {
             io.emit('dailyAlertNotification', {
                 warningCount: warningVisas.length,
                 expiredCount: expiredVisas.length,
-                warningList: warningVisas.map(w => w.clientName),
                 message: `⚠️ تنبيه تلقائي: يوجد ${warningVisas.length} تأشيرة قريبة من الانتهاء!`
             });
-            console.log(`🔔 [مهمة خلفية] تم رصد ${warningVisas.length} تأشيرة قريبة من الانتهاء و ${expiredVisas.length} منتهية.`);
         }
     } catch (err) {
         console.error('❌ خطأ في فحص التنبيهات التلقائية:', err);
     }
 }
 
-// ⏰ تشغيل الفحص التلقائي في الخلفية كل 12 ساعة طوال 24/7 دون الحاجة لفتح الموقع
+// ⏰ فحص دوري كل 12 ساعة في الخلفية
 setInterval(() => {
-    console.log('⏰ جاري إجراء الفحص التلقائي الدوري للتأشيرات...');
     checkAndSendAlerts();
-}, 12 * 60 * 60 * 1000); // كل 12 ساعة تلقائياً
+}, 12 * 60 * 60 * 1000);
 
 // API Routes
 // 1. Get all visas
@@ -132,7 +126,7 @@ app.post('/api/visas', async (req, res) => {
     try {
         const { 
             clientName, passportNumber, issueDate, durationDays, expiryDate, alertDate,
-            agencyName, clientPhone, hostPhone, agencyReply 
+            clientPhone, hostPhone, agencyReply 
         } = req.body;
         
         const status = calculateStatus(expiryDate);
@@ -140,7 +134,6 @@ app.post('/api/visas', async (req, res) => {
         const newVisa = new Visa({
             clientName,
             passportNumber,
-            agencyName: agencyName || '',
             clientPhone: clientPhone || '',
             hostPhone: hostPhone || '',
             agencyReply: agencyReply || '',
@@ -153,10 +146,9 @@ app.post('/api/visas', async (req, res) => {
 
         await newVisa.save();
 
-        // Broadcast to all clients
+        // بث الحدث فوراً لكل المتصلين (سواء لابتوب أو جوال) لضمان المزامنة الحية
         io.emit('visaAdded', newVisa);
         
-        // إعادة فحص التنبيهات فور إضافة أي عميل جديد
         checkAndSendAlerts();
 
         res.status(201).json(newVisa);
@@ -185,6 +177,5 @@ app.delete('/api/visas/:id', async (req, res) => {
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
     console.log(`🚀 WisalApp Server listening on port ${PORT}`);
-    // تشغيل فحص أولي عند إقلاع السيرفر
     checkAndSendAlerts();
 });
