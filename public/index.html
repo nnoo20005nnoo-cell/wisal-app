@@ -38,7 +38,7 @@
             background-color: var(--bg);
             color: var(--text);
             padding: 15px;
-            max-width: 1100px;
+            max-width: 1200px;
             margin: 0 auto;
         }
 
@@ -68,6 +68,7 @@
         .header-actions {
             display: flex;
             gap: 8px;
+            flex-wrap: wrap;
         }
 
         header button {
@@ -303,6 +304,7 @@
     <header>
         <h1><i class="fa-solid fa-passport"></i> تطبيق الوصال</h1>
         <div class="header-actions">
+            <button onclick="requestSystemNotification()"><i class="fa-solid fa-bell"></i> تفعيل إشعارات النظام</button>
             <button onclick="showQRCode()"><i class="fa-solid fa-qrcode"></i> فتح بالجوال</button>
         </div>
     </header>
@@ -351,6 +353,25 @@
                     <label>مدة التأشيرة (بالأيام)</label>
                     <input type="number" id="durationDays" value="90" required onchange="calculateDates()">
                 </div>
+                
+                <!-- الحقول الأربعة الجديدة المطلوبة -->
+                <div class="form-group">
+                    <label>اسم الوكالة المعاملة عندها</label>
+                    <input type="text" id="agencyName" placeholder="اسم الوكالة...">
+                </div>
+                <div class="form-group">
+                    <label>رقم جوال العميل</label>
+                    <input type="text" id="clientPhone" placeholder="رقم جوال العميل...">
+                </div>
+                <div class="form-group">
+                    <label>رقم جوال المستضيف</label>
+                    <input type="text" id="hostPhone" placeholder="رقم جوال المستضيف...">
+                </div>
+                <div class="form-group">
+                    <label>رد الوكالة المصدرة</label>
+                    <input type="text" id="agencyReply" placeholder="رد الوكالة...">
+                </div>
+
                 <div class="calculated-box">
                     <div>📅 انتهاء التأشيرة: <span id="calcExpiry">---</span></div>
                     <div>🔔 التنبيه (قبل 5 أيام): <span id="calcAlert">---</span></div>
@@ -368,6 +389,10 @@
                     <tr>
                         <th>العميل</th>
                         <th>رقم الجواز</th>
+                        <th>الوكالة المعاملة</th>
+                        <th>جوال العميل</th>
+                        <th>جوال المستضيف</th>
+                        <th>رد الوكالة</th>
                         <th>الإصدار</th>
                         <th>الانتهاء</th>
                         <th>التنبيه</th>
@@ -376,7 +401,7 @@
                     </tr>
                 </thead>
                 <tbody id="visaTableBody">
-                    <tr><td colspan="7" style="text-align:center;">جاري جلب البيانات...</td></tr>
+                    <tr><td colspan="11" style="text-align:center;">جاري جلب البيانات...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -394,6 +419,34 @@
     <script>
         const socket = io();
         let visasData = [];
+
+        // تفعيل إشعارات النظام الحقيقية للمتصفح (آيفون أو أندرويد)
+        function requestSystemNotification() {
+            if (!("Notification" in window)) {
+                alert("متصفحك لا يدعم إشعارات النظام المباشرة.");
+                return;
+            }
+            Notification.requestPermission().then(permission => {
+                if (permission === "granted") {
+                    new Notification("تطبيق الوصال للسفريات", {
+                        body: "تم تفعيل إشعارات النظام بنجاح! سيتم تنبيهك عند قرب انتهاء أي تأشيرة."
+                    });
+                } else {
+                    alert("يرجى السماح بالإشعارات من إعدادات المتصفح لديك.");
+                }
+            });
+        }
+
+        // إطلاق إشعار نظام فور اكتشاف تأشيرات قريبة من الانتهاء
+        function triggerSystemAlert(warningCount, expiredCount) {
+            if (Notification.permission === "granted" && (warningCount > 0 || expiredCount > 0)) {
+                if (warningCount > 0) {
+                    new Notification("⚠️ تنبيه عاجل من الوصال", {
+                        body: `يوجد (${warningCount}) تأشيرات اقترب موعد انتهائها!`
+                    });
+                }
+            }
+        }
 
         // Calculate dynamic dates
         function calculateDates() {
@@ -421,7 +474,7 @@
                 renderTable();
             } catch (err) {
                 console.error('Error:', err);
-                document.getElementById('visaTableBody').innerHTML = '<tr><td colspan="7" style="text-align:center; color:red;">خطأ في الاتصال بالخادم</td></tr>';
+                document.getElementById('visaTableBody').innerHTML = '<tr><td colspan="11" style="text-align:center; color:red;">خطأ في الاتصال بالخادم</td></tr>';
             }
         }
 
@@ -435,7 +488,7 @@
             let expired = 0;
 
             if (total === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">لا توجد تأشيرات مسجلة حتى الآن</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;">لا توجد تأشيرات مسجلة حتى الآن</td></tr>';
             } else {
                 visasData.forEach(v => {
                     if (v.status === 'منتهية') expired++;
@@ -449,6 +502,10 @@
                     tr.innerHTML = `
                         <td><strong>${v.clientName}</strong></td>
                         <td>${v.passportNumber}</td>
+                        <td>${v.agencyName || '---'}</td>
+                        <td>${v.clientPhone || '---'}</td>
+                        <td>${v.hostPhone || '---'}</td>
+                        <td>${v.agencyReply || '---'}</td>
                         <td>${v.issueDate}</td>
                         <td>${v.expiryDate}</td>
                         <td>${v.alertDate}</td>
@@ -462,6 +519,8 @@
             document.getElementById('totalClients').innerText = total;
             document.getElementById('warningVisas').innerText = warning;
             document.getElementById('expiredVisas').innerText = expired;
+
+            triggerSystemAlert(warning, expired);
         }
 
         // Form Submit
@@ -474,11 +533,20 @@
             const durationDays = document.getElementById('durationDays').value;
             const expiryDate = document.getElementById('calcExpiry').innerText;
             const alertDate = document.getElementById('calcAlert').innerText;
+            
+            // قراءة الحقول الجديدة
+            const agencyName = document.getElementById('agencyName').value;
+            const clientPhone = document.getElementById('clientPhone').value;
+            const hostPhone = document.getElementById('hostPhone').value;
+            const agencyReply = document.getElementById('agencyReply').value;
 
             const res = await fetch('/api/visas', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ clientName, passportNumber, issueDate, durationDays, expiryDate, alertDate })
+                body: JSON.stringify({ 
+                    clientName, passportNumber, issueDate, durationDays, expiryDate, alertDate,
+                    agencyName, clientPhone, hostPhone, agencyReply 
+                })
             });
 
             if (res.ok) {

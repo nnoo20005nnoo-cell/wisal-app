@@ -24,10 +24,14 @@ mongoose.connect(MONGO_URI)
     .then(() => console.log('✅ Connected successfully to MongoDB Atlas'))
     .catch((err) => console.error('❌ MongoDB Connection Error:', err));
 
-// Mongoose Schema & Model
+// Mongoose Schema & Model (محدث ليشمل الحقول الأربعة الجديدة)
 const visaSchema = new mongoose.Schema({
     clientName: { type: String, required: true },
     passportNumber: { type: String, required: true },
+    agencyName: { type: String, default: '' },
+    clientPhone: { type: String, default: '' },
+    hostPhone: { type: String, default: '' },
+    agencyReply: { type: String, default: '' },
     issueDate: { type: String, required: true },
     durationDays: { type: Number, required: true, default: 90 },
     expiryDate: { type: String, required: true },
@@ -107,13 +111,15 @@ setInterval(() => {
 app.get('/api/visas', async (req, res) => {
     try {
         const visas = await Visa.find().sort({ createdAt: -1 });
-        const updatedVisas = visas.map(v => {
+        const updatedVisas = [];
+        for (let v of visas) {
             const currentStatus = calculateStatus(v.expiryDate);
             if (v.status !== currentStatus) {
                 v.status = currentStatus;
+                await v.save();
             }
-            return v;
-        });
+            updatedVisas.push(v);
+        }
         res.json(updatedVisas);
     } catch (error) {
         console.error('Error fetching visas:', error);
@@ -124,12 +130,20 @@ app.get('/api/visas', async (req, res) => {
 // 2. Add new visa
 app.post('/api/visas', async (req, res) => {
     try {
-        const { clientName, passportNumber, issueDate, durationDays, expiryDate, alertDate } = req.body;
+        const { 
+            clientName, passportNumber, issueDate, durationDays, expiryDate, alertDate,
+            agencyName, clientPhone, hostPhone, agencyReply 
+        } = req.body;
+        
         const status = calculateStatus(expiryDate);
 
         const newVisa = new Visa({
             clientName,
             passportNumber,
+            agencyName: agencyName || '',
+            clientPhone: clientPhone || '',
+            hostPhone: hostPhone || '',
+            agencyReply: agencyReply || '',
             issueDate,
             durationDays: parseInt(durationDays) || 90,
             expiryDate,
