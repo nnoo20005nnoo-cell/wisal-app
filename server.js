@@ -14,17 +14,14 @@ const io = new Server(server, {
     }
 });
 
-// Middleware
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Database Connection
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/wisalDB';
 mongoose.connect(MONGO_URI)
     .then(() => console.log('✅ Connected successfully to MongoDB Atlas'))
     .catch((err) => console.error('❌ MongoDB Connection Error:', err));
 
-// Mongoose Schema & Model (متوافق تماماً مع الحقول الجديدة)
 const visaSchema = new mongoose.Schema({
     clientName: { type: String, required: true },
     passportNumber: { type: String, required: true },
@@ -40,10 +37,8 @@ const visaSchema = new mongoose.Schema({
 
 const Visa = mongoose.model('Visa', visaSchema);
 
-// Socket.io Real-time connection
 io.on('connection', (socket) => {
     console.log('⚡ A user connected to WebSocket:', socket.id);
-    
     checkAndSendAlerts();
 
     socket.on('disconnect', () => {
@@ -51,7 +46,6 @@ io.on('connection', (socket) => {
     });
 });
 
-// Helper function to update status
 function calculateStatus(expiryDateStr) {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -65,7 +59,6 @@ function calculateStatus(expiryDateStr) {
     return 'نشطة';
 }
 
-// 🔔 دالة الفحص الخلفي التلقائي والتنبيهات المستمرة
 async function checkAndSendAlerts() {
     try {
         const visas = await Visa.find();
@@ -95,13 +88,10 @@ async function checkAndSendAlerts() {
     }
 }
 
-// ⏰ فحص دوري كل 12 ساعة في الخلفية
 setInterval(() => {
     checkAndSendAlerts();
 }, 12 * 60 * 60 * 1000);
 
-// API Routes
-// 1. Get all visas
 app.get('/api/visas', async (req, res) => {
     try {
         const visas = await Visa.find().sort({ createdAt: -1 });
@@ -121,7 +111,6 @@ app.get('/api/visas', async (req, res) => {
     }
 });
 
-// 2. Add new visa
 app.post('/api/visas', async (req, res) => {
     try {
         const { 
@@ -145,10 +134,7 @@ app.post('/api/visas', async (req, res) => {
         });
 
         await newVisa.save();
-
-        // بث الحدث فوراً لكل المتصلين (سواء لابتوب أو جوال) لضمان المزامنة الحية
         io.emit('visaAdded', newVisa);
-        
         checkAndSendAlerts();
 
         res.status(201).json(newVisa);
@@ -158,7 +144,6 @@ app.post('/api/visas', async (req, res) => {
     }
 });
 
-// 3. Delete visa
 app.delete('/api/visas/:id', async (req, res) => {
     try {
         const deletedVisa = await Visa.findByIdAndDelete(req.params.id);
@@ -173,7 +158,6 @@ app.delete('/api/visas/:id', async (req, res) => {
     }
 });
 
-// Start Server
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
     console.log(`🚀 WisalApp Server listening on port ${PORT}`);

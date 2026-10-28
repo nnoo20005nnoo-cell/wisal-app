@@ -4,27 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>تطبيق الوصال - إدارة التأشيرات</title>
+    <!-- أيقونة الموقع (Favicon) بدلاً من رمز الكرة الأرضية -->
+    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/1055/1055687.png">
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#02A5A4">
+    
     <!-- مكتبات الدعم والاتصال -->
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
         :root {
-            --primary: #02A5A4;
-            --primary-dark: #0D9494;
-            --accent: #B05C2E;
-            --bg: #F4F7F6;
-            --card-bg: #FFFFFF;
-            --text: #1E293B;
-            --border: #E2E8F0;
-            --danger: #EF4444;
-            --warning: #F59E0B;
-            --success: #10B981;
-            --radius: 16px;
+            --primary: #02A5A4;       /* التركوازي الأساسي */
+            --primary-dark: #017A79;  /* تركوازي غامق للتدرج */
+            --accent: #B05C2E;        /* البرتقالي الدافئ المتميز */
+            --accent-hover: #934B22;  /* برتقالي غامق عند التحويم */
+            --bg: #F4F7F6;            /* خلفية هادئة ونظيفة */
+            --card-bg: #FFFFFF;       /* خلفية البطاقات */
+            --text: #1E293B;          /* لون النص الرئيسي */
+            --border: #E2E8F0;        /* الحدود ناعمة */
+            --danger: #EF4444;        /* أحمر للحذف والمنتهي */
+            --warning: #F59E0B;       /* برتقالي/أصفر للتحذير */
+            --success: #10B981;       /* أخضر للحالة النشطة */
+            --radius: 18px;           /* زوايا دائرية عصرية حديثة 2026 */
         }
 
         * {
@@ -37,36 +41,46 @@
         body {
             background-color: var(--bg);
             color: var(--text);
-            padding: 15px;
+            padding: 20px;
             max-width: 1200px;
             margin: 0 auto;
         }
 
+        /* رأس الصفحة الفخم بدمج التركوازي والبرتقالي */
         header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 18px 20px;
+            padding: 22px 28px;
             background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             color: white;
             border-radius: var(--radius);
-            box-shadow: 0 10px 25px -5px rgba(2, 165, 164, 0.25);
-            margin-bottom: 20px;
+            box-shadow: 0 12px 30px -8px rgba(2, 165, 164, 0.3);
+            margin-bottom: 25px;
             flex-wrap: wrap;
-            gap: 12px;
+            gap: 15px;
+            border-bottom: 4px solid var(--accent);
         }
 
         header h1 {
-            font-size: 1.3rem;
+            font-size: 1.5rem;
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-weight: 700;
+            gap: 12px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+        }
+
+        header h1 i {
+            color: #FFD166;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 10px;
+            border-radius: 12px;
         }
 
         .header-actions {
             display: flex;
-            gap: 8px;
+            gap: 10px;
             flex-wrap: wrap;
         }
 
@@ -74,102 +88,136 @@
             background: rgba(255, 255, 255, 0.2);
             border: 1px solid rgba(255, 255, 255, 0.4);
             color: white;
-            padding: 6px 12px;
-            border-radius: 10px;
+            padding: 9px 16px;
+            border-radius: 12px;
             cursor: pointer;
-            font-weight: 600;
-            font-size: 0.8rem;
-            transition: all 0.3s ease;
+            font-weight: 700;
+            font-size: 0.85rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 8px;
+            backdrop-filter: blur(5px);
         }
 
         header button:hover {
-            background: rgba(255, 255, 255, 0.3);
+            background: var(--accent);
+            border-color: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(176, 92, 46, 0.3);
         }
 
-        /* تنبيه داخلي قوي يظهر في أعلى الشاشة بدلاً من إشعارات المتصفح المعطلة */
+        /* شريط التنبيه الفوري القوي */
         #alertBanner {
             display: none;
-            background: linear-gradient(135deg, #FEF3C7, #FDE68A);
+            background: linear-gradient(135deg, #FFFBEB, #FEF3C7);
             border: 2px solid var(--warning);
             color: #92400E;
-            padding: 15px 20px;
+            padding: 16px 22px;
             border-radius: var(--radius);
-            margin-bottom: 20px;
+            margin-bottom: 25px;
             font-weight: 700;
-            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+            box-shadow: 0 6px 15px rgba(245, 158, 11, 0.15);
             align-items: center;
             justify-content: space-between;
+            animation: fadeIn 0.4s ease-in-out;
         }
 
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* شبكة الإحصائيات الفخمة */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
         }
 
         .stat-card {
             background: var(--card-bg);
-            padding: 15px;
+            padding: 20px 22px;
             border-radius: var(--radius);
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03);
+            box-shadow: 0 4px 12px -2px rgba(0,0,0,0.04);
             border: 1px solid var(--border);
             display: flex;
             justify-content: space-between;
             align-items: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0; right: 0; width: 5px; height: 100%;
+            background: var(--primary);
+        }
+
+        .stat-card:nth-child(2)::before { background: var(--warning); }
+        .stat-card:nth-child(3)::before { background: var(--danger); }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 20px -5px rgba(0,0,0,0.08);
         }
 
         .stat-card h3 {
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             color: #64748B;
-            margin-bottom: 4px;
-            font-weight: 600;
+            margin-bottom: 6px;
+            font-weight: 700;
         }
 
         .stat-card .number {
-            font-size: 1.5rem;
-            font-weight: 700;
+            font-size: 1.8rem;
+            font-weight: 800;
             color: var(--primary-dark);
         }
 
+        /* البطاقات الرئيسية */
         .card {
             background: var(--card-bg);
-            padding: 20px;
+            padding: 25px;
             border-radius: var(--radius);
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03);
+            box-shadow: 0 4px 15px -3px rgba(0,0,0,0.04);
             border: 1px solid var(--border);
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
 
         .card-title {
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             color: var(--text);
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             border-bottom: 2px solid var(--bg);
-            padding-bottom: 10px;
-            font-weight: 700;
+            padding-bottom: 12px;
+            font-weight: 800;
         }
 
         .card-title i {
-            color: var(--primary);
+            color: var(--accent);
+            background: rgba(176, 92, 46, 0.1);
+            padding: 8px;
+            border-radius: 10px;
         }
 
+        /* حقول الإدخال بتصميم 2026 ناعم ومرتب */
         .form-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 15px;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
         }
 
         .form-group {
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 8px;
         }
 
         label {
@@ -179,77 +227,93 @@
         }
 
         input, select {
-            padding: 10px 14px;
+            padding: 12px 16px;
             border: 2px solid var(--border);
-            border-radius: 10px;
-            font-size: 0.9rem;
+            border-radius: 12px;
+            font-size: 0.95rem;
             outline: none;
             transition: all 0.3s ease;
             background-color: #FAFAFA;
+            color: var(--text);
         }
 
         input:focus {
             border-color: var(--primary);
             background-color: #FFFFFF;
-            box-shadow: 0 0 0 3px rgba(2, 165, 164, 0.1);
+            box-shadow: 0 0 0 4px rgba(2, 165, 164, 0.12);
         }
 
         .calculated-box {
             grid-column: 1 / -1;
-            background: #F0FDFA;
-            border: 1px solid #CCFBF1;
-            padding: 12px 15px;
-            border-radius: 10px;
+            background: linear-gradient(135deg, #F0FDFA, #CCFBF1);
+            border: 1px solid #99F6E4;
+            padding: 15px 20px;
+            border-radius: 12px;
             display: flex;
             justify-content: space-around;
             flex-wrap: wrap;
-            gap: 10px;
-            font-size: 0.85rem;
-            font-weight: 700;
+            gap: 15px;
+            font-size: 0.9rem;
+            font-weight: 800;
             color: #0F766E;
         }
 
+        /* الأزرار الحديثة جداً بلمسة برتقالية وترقوازية */
         button.btn-primary {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            background: linear-gradient(135deg, var(--accent), var(--accent-hover));
             color: white;
             border: none;
-            padding: 12px 20px;
-            border-radius: 10px;
-            font-size: 0.95rem;
-            font-weight: 700;
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 800;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             width: 100%;
-            margin-top: 15px;
-            box-shadow: 0 4px 12px rgba(2, 165, 164, 0.25);
+            margin-top: 20px;
+            box-shadow: 0 6px 18px rgba(176, 92, 46, 0.3);
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 10px;
+            letter-spacing: 0.5px;
         }
 
+        button.btn-primary:hover {
+            opacity: 0.95;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 22px rgba(176, 92, 46, 0.4);
+        }
+
+        /* الجدول العصري */
         .table-responsive {
             overflow-x: auto;
+            border-radius: 12px;
+            border: 1px solid var(--border);
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 5px;
             white-space: nowrap;
+            background: white;
         }
 
         th, td {
-            padding: 12px 14px;
+            padding: 14px 18px;
             text-align: right;
             border-bottom: 1px solid var(--border);
-            font-size: 0.85rem;
+            font-size: 0.9rem;
         }
 
         th {
             background-color: #F8FAFC;
             color: #475569;
-            font-weight: 700;
+            font-weight: 800;
+        }
+
+        tr {
+            transition: background 0.2s;
         }
 
         tr:hover {
@@ -257,10 +321,10 @@
         }
 
         .badge {
-            padding: 5px 10px;
-            border-radius: 20px;
+            padding: 6px 14px;
+            border-radius: 30px;
             font-size: 0.75rem;
-            font-weight: 700;
+            font-weight: 800;
             display: inline-block;
         }
 
@@ -272,19 +336,25 @@
             background: var(--danger);
             color: white;
             border: none;
-            padding: 5px 10px;
-            border-radius: 6px;
+            padding: 7px 14px;
+            border-radius: 8px;
             cursor: pointer;
-            font-size: 0.75rem;
-            font-weight: 600;
+            font-size: 0.8rem;
+            font-weight: 700;
+            transition: opacity 0.2s;
         }
 
+        .btn-delete:hover {
+            opacity: 0.85;
+        }
+
+        /* نافذة QR Code الفخمة */
         #qrModal {
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(4px);
+            background: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(6px);
             justify-content: center;
             align-items: center;
             z-index: 1000;
@@ -292,30 +362,32 @@
 
         .modal-content {
             background: white;
-            padding: 25px;
+            padding: 30px;
             border-radius: var(--radius);
             text-align: center;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 15px;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            gap: 20px;
+            box-shadow: 0 25px 35px -5px rgba(0, 0, 0, 0.2);
+            border-top: 5px solid var(--accent);
         }
     </style>
 </head>
 <body>
 
     <header>
-        <h1><i class="fa-solid fa-passport"></i> تطبيق الوصال</h1>
+        <h1><i class="fa-solid fa-passport"></i> تطبيق الوصال - إدارة التأشيرات</h1>
         <div class="header-actions">
+            <button onclick="requestPushPermission()"><i class="fa-solid fa-bell"></i> تفعيل إشعارات النظام</button>
             <button onclick="showQRCode()"><i class="fa-solid fa-qrcode"></i> فتح بالجوال</button>
         </div>
     </header>
 
-    <!-- شريط التنبيه الفوري القوي الذي يظهر تلقائياً على الشاشة -->
+    <!-- شريط التنبيه الفوري -->
     <div id="alertBanner">
         <span><i class="fa-solid fa-triangle-exclamation"></i> <span id="alertBannerText">تنبيه: يوجد تأشيرات على وشك الانتهاء!</span></span>
-        <button onclick="document.getElementById('alertBanner').style.display='none'" style="background:none; border:none; color:#92400E; cursor:pointer; font-weight:bold;">إغلاق ✕</button>
+        <button onclick="document.getElementById('alertBanner').style.display='none'" style="background:none; border:none; color:#92400E; cursor:pointer; font-weight:bold; font-size: 1rem;">إغلاق ✕</button>
     </div>
 
     <div class="stats-grid">
@@ -324,21 +396,21 @@
                 <h3>إجمالي العملاء</h3>
                 <div class="number" id="totalClients">0</div>
             </div>
-            <i class="fa-solid fa-users" style="font-size: 1.8rem; color: var(--primary);"></i>
+            <i class="fa-solid fa-users" style="font-size: 2rem; color: var(--primary);"></i>
         </div>
         <div class="stat-card">
             <div>
                 <h3>قريبة الانتهاء</h3>
                 <div class="number" id="warningVisas" style="color: var(--warning);">0</div>
             </div>
-            <i class="fa-solid fa-clock-rotate-left" style="font-size: 1.8rem; color: var(--warning);"></i>
+            <i class="fa-solid fa-clock-rotate-left" style="font-size: 2rem; color: var(--warning);"></i>
         </div>
         <div class="stat-card">
             <div>
-                <h3>منتهية</h3>
+                <h3>تأشيرات منتهية</h3>
                 <div class="number" id="expiredVisas" style="color: var(--danger);">0</div>
             </div>
-            <i class="fa-solid fa-triangle-exclamation" style="font-size: 1.8rem; color: var(--danger);"></i>
+            <i class="fa-solid fa-triangle-exclamation" style="font-size: 2rem; color: var(--danger);"></i>
         </div>
     </div>
 
@@ -362,8 +434,6 @@
                     <label>مدة التأشيرة (بالأيام)</label>
                     <input type="number" id="durationDays" value="90" required onchange="calculateDates()">
                 </div>
-                
-                <!-- الحقول المطلوبة (تم حذف الوكالة المعاملة وتعديل الأخرى إلى اسم الوكالة المصدرة) -->
                 <div class="form-group">
                     <label>رقم جوال العميل</label>
                     <input type="text" id="clientPhone" placeholder="رقم جوال العميل...">
@@ -414,9 +484,9 @@
     <!-- Modal QR Code -->
     <div id="qrModal" onclick="this.style.display='none'">
         <div class="modal-content" onclick="event.stopPropagation()">
-            <h3 style="color: var(--text); font-size: 1.1rem;">مسح الرمز للفتح على الجوال</h3>
+            <h3 style="color: var(--text); font-size: 1.2rem; font-weight: 800;">مسح الرمز للفتح على الجوال</h3>
             <div id="qrcode"></div>
-            <button onclick="document.getElementById('qrModal').style.display='none'" class="btn-delete" style="padding: 6px 15px;">إغلاق</button>
+            <button onclick="document.getElementById('qrModal').style.display='none'" class="btn-delete" style="padding: 8px 20px; font-weight: 700;">إغلاق</button>
         </div>
     </div>
 
@@ -424,11 +494,33 @@
         const socket = io();
         let visasData = [];
 
-        // Calculate dynamic dates
+        function requestPushPermission() {
+            if (!("Notification" in window)) {
+                alert("متصفحك لا يدعم إشعارات النظام.");
+                return;
+            }
+            Notification.requestPermission().then(permission => {
+                if (permission === "granted") {
+                    new Notification("تطبيق الوصال", {
+                        body: "تم تفعيل إشعارات النظام بنجاح!"
+                    });
+                } else {
+                    alert("يرجى السماح بالإشعارات من إعدادات المتصفح.");
+                }
+            });
+        }
+
+        function showSystemNotification(clientName) {
+            if ("Notification" in window && Notification.permission === "granted") {
+                new Notification("إدارة الوصال", {
+                    body: `انتبه باقي 5 أيام وتنتهي تأشيرة (${clientName})`
+                });
+            }
+        }
+
         function calculateDates() {
             const issueDateVal = document.getElementById('issueDate').value;
             const duration = parseInt(document.getElementById('durationDays').value) || 90;
-
             if (!issueDateVal) return;
 
             const issue = new Date(issueDateVal);
@@ -442,7 +534,6 @@
             document.getElementById('calcAlert').innerText = alertDate.toISOString().split('T')[0];
         }
 
-        // Fetch Initial Visas
         async function fetchVisas() {
             try {
                 const res = await fetch('/api/visas');
@@ -454,7 +545,6 @@
             }
         }
 
-        // Render Table & Update Statistics
         function renderTable() {
             const tbody = document.getElementById('visaTableBody');
             tbody.innerHTML = '';
@@ -468,7 +558,10 @@
             } else {
                 visasData.forEach(v => {
                     if (v.status === 'منتهية') expired++;
-                    if (v.status === 'قريبة من الانتهاء') warning++;
+                    if (v.status === 'قريبة من الانتهاء') {
+                        warning++;
+                        showSystemNotification(v.clientName);
+                    }
 
                     let badgeClass = 'badge-active';
                     if (v.status === 'منتهية') badgeClass = 'badge-expired';
@@ -495,14 +588,12 @@
             document.getElementById('warningVisas').innerText = warning;
             document.getElementById('expiredVisas').innerText = expired;
 
-            // إظهار شريط التنبيه الفوري في أعلى الشاشة تلقائياً إذا وجدنا تأشيرات قريبة الانتهاء
             if (warning > 0 || expired > 0) {
                 document.getElementById('alertBannerText').innerText = `⚠️ تنبيه هام: يوجد (${warning}) تأشيرات قريبة من الانتهاء و (${expired}) منتهية!`;
                 document.getElementById('alertBanner').style.display = 'flex';
             }
         }
 
-        // Form Submit
         document.getElementById('visaForm').addEventListener('submit', async (e) => {
             e.preventDefault();
 
@@ -533,14 +624,12 @@
             }
         });
 
-        // Delete Visa
         async function deleteVisa(id) {
             if (confirm('هل أنتِ متأكدة من حذف هذه التأشيرة؟')) {
                 await fetch(`/api/visas/${id}`, { method: 'DELETE' });
             }
         }
 
-        // Socket.io Realtime Listeners (مزامنة فورية بين الجوال واللابتوب)
         socket.on('visaAdded', (newVisa) => {
             visasData.unshift(newVisa);
             renderTable();
@@ -551,7 +640,6 @@
             renderTable();
         });
 
-        // QR Code Generator Modal
         function showQRCode() {
             document.getElementById('qrcode').innerHTML = '';
             new QRCode(document.getElementById('qrcode'), {
@@ -562,7 +650,6 @@
             document.getElementById('qrModal').style.display = 'flex';
         }
 
-        // Initial Load
         fetchVisas();
     </script>
 </body>
