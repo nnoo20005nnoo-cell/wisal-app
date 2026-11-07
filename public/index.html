@@ -27,6 +27,7 @@
             --danger: #EF4444;        /* أحمر أنيق */
             --warning: #F59E0B;       /* أصفر تحذيري */
             --success: #10B981;       /* أخضر ناصع */
+            --info: #3B82F6;          /* أزرق لزر التعديل */
             --radius: 20px;           /* زوايا دائرية فخمة */
             --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -291,7 +292,7 @@
             box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
         }
 
-        /* زر الحفظ باللون البرتقالي المطلوب `#F7691F` مع تأثيرات حركية خارقة */
+        /* زر الحفظ والأزرار الأخرى */
         button.btn-primary {
             background: linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%);
             color: white;
@@ -318,8 +319,33 @@
             opacity: 0.96;
         }
 
-        button.btn-primary:active {
-            transform: translateY(-1px);
+        /* شريط البحث العلوي في الجدول */
+        .table-header-flex {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .search-box {
+            position: relative;
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding-right: 45px;
+        }
+
+        .search-box i {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94A3B8;
         }
 
         /* الجدول العصري السلس */
@@ -372,11 +398,35 @@
         .badge-warning { background: #FEF3C7; color: #92400E; }
         .badge-expired { background: #FEE2E2; color: #991B1B; }
 
+        .action-btns {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-edit {
+            background: var(--info);
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.82rem;
+            font-weight: 800;
+            transition: var(--transition);
+            box-shadow: 0 2px 5px rgba(59, 130, 246, 0.2);
+        }
+
+        .btn-edit:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 12px rgba(59, 130, 246, 0.3);
+        }
+
         .btn-delete {
             background: var(--danger);
             color: white;
             border: none;
-            padding: 8px 16px;
+            padding: 8px 14px;
             border-radius: 10px;
             cursor: pointer;
             font-size: 0.82rem;
@@ -391,7 +441,7 @@
             box-shadow: 0 5px 12px rgba(239, 68, 68, 0.3);
         }
 
-        /* نافذة QR Code المنبثقة الفخمة */
+        /* نافذة QR Code المنبثقة */
         #qrModal {
             display: none;
             position: fixed;
@@ -401,12 +451,6 @@
             justify-content: center;
             align-items: center;
             z-index: 1000;
-            animation: fadeInModal 0.3s ease-in-out;
-        }
-
-        @keyframes fadeInModal {
-            from { opacity: 0; }
-            to { opacity: 1; }
         }
 
         .modal-content {
@@ -421,12 +465,6 @@
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
             border-top: 6px solid var(--accent);
             max-width: 90%;
-            animation: scaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        @keyframes scaleUp {
-            from { transform: scale(0.9); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
         }
 
         #qrcode img {
@@ -478,9 +516,11 @@
         </div>
     </div>
 
+    <!-- بطاقة نموذج الإضافة / التعديل -->
     <div class="card">
-        <h2 class="card-title"><i class="fa-solid fa-user-plus"></i> إضافة عميل جديد</h2>
+        <h2 class="card-title" id="formTitle"><i class="fa-solid fa-user-plus"></i> إضافة عميل جديد</h2>
         <form id="visaForm">
+            <input type="hidden" id="editId">
             <div class="form-grid">
                 <div class="form-group">
                     <label>اسم العميل</label>
@@ -510,18 +550,29 @@
                     <label>اسم الوكالة المصدرة</label>
                     <input type="text" id="agencyReply" placeholder="اسم الوكالة المصدرة...">
                 </div>
+                <div class="form-group">
+                    <label>ملاحظات</label>
+                    <input type="text" id="notes" placeholder="ملاحظات إضافية...">
+                </div>
 
                 <div class="calculated-box">
                     <div>📅 انتهاء التأشيرة: <span id="calcExpiry">---</span></div>
                     <div>🔔 التنبيه (قبل 5 أيام): <span id="calcAlert">---</span></div>
                 </div>
             </div>
-            <button type="submit" class="btn-primary"><i class="fa-solid fa-floppy-disk"></i> حفظ العميل</button>
+            <button type="submit" id="submitBtn" class="btn-primary"><i class="fa-solid fa-floppy-disk"></i> حفظ العميل</button>
         </form>
     </div>
 
+    <!-- جدول البيانات والبحث -->
     <div class="card">
-        <h2 class="card-title"><i class="fa-solid fa-table-list"></i> سجل التأشيرات (مزامنة فورية ⚡)</h2>
+        <div class="table-header-flex">
+            <h2 class="card-title" style="margin-bottom: 0; border-bottom: none; padding-bottom: 0;"><i class="fa-solid fa-table-list"></i> سجل التأشيرات (مزامنة فورية ⚡)</h2>
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="ابحث باسم العميل أو رقم الجواز..." oninput="renderTable()">
+                <i class="fa-solid fa-search"></i>
+            </div>
+        </div>
         <div class="table-responsive">
             <table>
                 <thead>
@@ -531,6 +582,7 @@
                         <th>جوال العميل</th>
                         <th>جوال المستضيف</th>
                         <th>اسم الوكالة المصدرة</th>
+                        <th>ملاحظات</th>
                         <th>الإصدار</th>
                         <th>الانتهاء</th>
                         <th>التنبيه</th>
@@ -539,7 +591,7 @@
                     </tr>
                 </thead>
                 <tbody id="visaTableBody">
-                    <tr><td colspan="10" style="text-align:center; padding: 25px; color: #64748B;">جاري جلب البيانات...</td></tr>
+                    <tr><td colspan="11" style="text-align:center; padding: 25px; color: #64748B;">جاري جلب البيانات...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -605,7 +657,7 @@
                 renderTable();
             } catch (err) {
                 console.error('Error:', err);
-                document.getElementById('visaTableBody').innerHTML = '<tr><td colspan="10" style="text-align:center; color:red;">خطأ في الاتصال بالخادم</td></tr>';
+                document.getElementById('visaTableBody').innerHTML = '<tr><td colspan="11" style="text-align:center; color:red;">خطأ في الاتصال بالخادم</td></tr>';
             }
         }
 
@@ -613,20 +665,29 @@
             const tbody = document.getElementById('visaTableBody');
             tbody.innerHTML = '';
 
+            const searchQuery = document.getElementById('searchInput').value.toLowerCase();
+            const filteredData = visasData.filter(v => 
+                v.clientName.toLowerCase().includes(searchQuery) || 
+                v.passportNumber.toLowerCase().includes(searchQuery)
+            );
+
             let total = visasData.length;
             let warning = 0;
             let expired = 0;
 
-            if (total === 0) {
-                tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; padding: 25px; color: #64748B;">لا توجد تأشيرات مسجلة حتى الآن</td></tr>';
-            } else {
-                visasData.forEach(v => {
-                    if (v.status === 'منتهية') expired++;
-                    if (v.status === 'قريبة من الانتهاء') {
-                        warning++;
-                        showSystemNotification(v.clientName);
-                    }
+            // حساب التنبيهات من إجمالي البيانات بغض النظر عن البحث
+            visasData.forEach(v => {
+                if (v.status === 'منتهية') expired++;
+                if (v.status === 'قريبة من الانتهاء') {
+                    warning++;
+                    showSystemNotification(v.clientName);
+                }
+            });
 
+            if (filteredData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="11" style="text-align:center; padding: 25px; color: #64748B;">لا توجد نتائج مطابقة للبحث</td></tr>';
+            } else {
+                filteredData.forEach(v => {
                     let badgeClass = 'badge-active';
                     if (v.status === 'منتهية') badgeClass = 'badge-expired';
                     if (v.status === 'قريبة من الانتهاء') badgeClass = 'badge-warning';
@@ -638,11 +699,17 @@
                         <td>${v.clientPhone || '---'}</td>
                         <td>${v.hostPhone || '---'}</td>
                         <td>${v.agencyReply || '---'}</td>
+                        <td>${v.notes || '---'}</td>
                         <td>${v.issueDate}</td>
                         <td>${v.expiryDate}</td>
                         <td>${v.alertDate}</td>
                         <td><span class="badge ${badgeClass}">${v.status}</span></td>
-                        <td><button class="btn-delete" onclick="deleteVisa('${v._id}')">حذف</button></td>
+                        <td>
+                            <div class="action-btns">
+                                <button class="btn-edit" onclick="editVisa('${v._id}')">تعديل</button>
+                                <button class="btn-delete" onclick="deleteVisa('${v._id}')">حذف</button>
+                            </div>
+                        </td>
                     `;
                     tbody.appendChild(tr);
                 });
@@ -658,9 +725,34 @@
             }
         }
 
+        // تعبئة البيانات في النموذج لتعديلها
+        function editVisa(id) {
+            const v = visasData.find(item => item._id === id);
+            if (!v) return;
+
+            document.getElementById('editId').value = v._id;
+            document.getElementById('clientName').value = v.clientName;
+            document.getElementById('passportNumber').value = v.passportNumber;
+            document.getElementById('issueDate').value = v.issueDate;
+            document.getElementById('durationDays').value = v.durationDays;
+            document.getElementById('clientPhone').value = v.clientPhone || '';
+            document.getElementById('hostPhone').value = v.hostPhone || '';
+            document.getElementById('agencyReply').value = v.agencyReply || '';
+            document.getElementById('notes').value = v.notes || '';
+
+            calculateDates();
+
+            // تغيير مظهر زر وحالة النموذج إلى تعديل
+            document.getElementById('formTitle').innerHTML = '<i class="fa-solid fa-user-pen"></i> تعديل بيانات العميل';
+            document.getElementById('submitBtn').innerHTML = '<i class="fa-solid fa-pen-to-square"></i> تحديث البيانات';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Form Submit (للإضافة أو التحديث)
         document.getElementById('visaForm').addEventListener('submit', async (e) => {
             e.preventDefault();
 
+            const editId = document.getElementById('editId').value;
             const clientName = document.getElementById('clientName').value;
             const passportNumber = document.getElementById('passportNumber').value;
             const issueDate = document.getElementById('issueDate').value;
@@ -671,22 +763,43 @@
             const clientPhone = document.getElementById('clientPhone').value;
             const hostPhone = document.getElementById('hostPhone').value;
             const agencyReply = document.getElementById('agencyReply').value;
+            const notes = document.getElementById('notes').value;
 
-            const res = await fetch('/api/visas', {
-                method: 'POST',
+            const payload = { 
+                clientName, passportNumber, issueDate, durationDays, expiryDate, alertDate,
+                clientPhone, hostPhone, agencyReply, notes 
+            };
+
+            if (editId) {
+                // تعديل عنصر موجود (سنرسله كـ PUT أو سننشئ مساراً له أو نحذفه ونضيفه، لتجنب تعديل السيرفر سنستخدم طريقة التعديل المباشر أو الـ POST المحدث)
+                // بما أننا نريد الحفاظ على السيرفر سليم سنقوم بإرساله كـ POST أو سنضيف مسار التعديل في الباكيند لو أردتِ، أو الأسهل حذف القديم وإضافة الجديد أو استخدام مسار تحديث.
+            }
+
+            // لضمان عمل التعديل بسلاسة دون أخطاء سيرفر، سنعدل الطلب:
+            const url = editId ? `/api/visas/${editId}` : '/api/visas';
+            const method = editId ? 'PUT' : 'POST';
+
+            const res = await fetch(url, {
+                method: method,
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    clientName, passportNumber, issueDate, durationDays, expiryDate, alertDate,
-                    clientPhone, hostPhone, agencyReply 
-                })
+                body: JSON.stringify(payload)
             });
 
             if (res.ok) {
-                document.getElementById('visaForm').reset();
-                document.getElementById('calcExpiry').innerText = '---';
-                document.getElementById('calcAlert').innerText = '---';
+                resetForm();
+                fetchVisas();
             }
         });
+
+        function resetForm() {
+            document.getElementById('visaForm').reset();
+            document.getElementById('editId').value = '';
+            document.getElementById('calcExpiry').innerText = '---';
+            document.getElementById('calcAlert').innerText = '---';
+            document.getElementById('formTitle').innerHTML = '<i class="fa-solid fa-user-plus"></i> إضافة عميل جديد';
+            document.getElementById('submitBtn').innerHTML = '<i class="fa-solid fa-floppy-disk"></i> حفظ العميل';
+            document.getElementById('durationDays').value = 90;
+        }
 
         async function deleteVisa(id) {
             if (confirm('هل أنتِ متأكدة من حذف هذه التأشيرة؟')) {
@@ -696,6 +809,14 @@
 
         socket.on('visaAdded', (newVisa) => {
             visasData.unshift(newVisa);
+            renderTable();
+        });
+
+        socket.on('visaUpdated', (updatedVisa) => {
+            const index = visasData.findIndex(v => v._id === updatedVisa._id);
+            if (index !== -1) {
+                visasData[index] = updatedVisa;
+            }
             renderTable();
         });
 
