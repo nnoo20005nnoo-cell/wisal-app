@@ -22,12 +22,14 @@ mongoose.connect(MONGO_URI)
     .then(() => console.log('✅ Connected successfully to MongoDB Atlas'))
     .catch((err) => console.error('❌ MongoDB Connection Error:', err));
 
+// تم إضافه حقل notes هنا ليدعم الملاحظات الطويلة بدون حدود
 const visaSchema = new mongoose.Schema({
     clientName: { type: String, required: true },
     passportNumber: { type: String, required: true },
     clientPhone: { type: String, default: '' },
     hostPhone: { type: String, default: '' },
     agencyReply: { type: String, default: '' },
+    notes: { type: String, default: '' }, // 📝 حقل الملاحظات الجديد
     issueDate: { type: String, required: true },
     durationDays: { type: Number, required: true, default: 90 },
     expiryDate: { type: String, required: true },
@@ -111,11 +113,12 @@ app.get('/api/visas', async (req, res) => {
     }
 });
 
+// 1. إضافة عميل جديد (مع دعم notes)
 app.post('/api/visas', async (req, res) => {
     try {
         const { 
             clientName, passportNumber, issueDate, durationDays, expiryDate, alertDate,
-            clientPhone, hostPhone, agencyReply 
+            clientPhone, hostPhone, agencyReply, notes 
         } = req.body;
         
         const status = calculateStatus(expiryDate);
@@ -126,6 +129,7 @@ app.post('/api/visas', async (req, res) => {
             clientPhone: clientPhone || '',
             hostPhone: hostPhone || '',
             agencyReply: agencyReply || '',
+            notes: notes || '',
             issueDate,
             durationDays: parseInt(durationDays) || 90,
             expiryDate,
@@ -144,6 +148,36 @@ app.post('/api/visas', async (req, res) => {
     }
 });
 
+// 2. تعديل بيانات عميل (مسار PUT لتحديث الملاحظات والبيانات)
+app.put('/api/visas/:id', async (req, res) => {
+    try {
+        const { 
+            clientName, passportNumber, issueDate, durationDays, expiryDate, alertDate,
+            clientPhone, hostPhone, agencyReply, notes 
+        } = req.body;
+        
+        const status = calculateStatus(expiryDate);
+
+        const updatedVisa = await Visa.findByIdAndUpdate(
+            req.params.id,
+            { clientName, passportNumber, issueDate, durationDays: parseInt(durationDays) || 90, expiryDate, alertDate, clientPhone, hostPhone, agencyReply, notes, status },
+            { new: true }
+        );
+
+        if (!updatedVisa) {
+            return res.status(404).json({ error: 'التأشيرة غير موجودة للتعديل' });
+        }
+
+        io.emit('visaUpdated', updatedVisa);
+        checkAndSendAlerts();
+        res.json(updatedVisa);
+    } catch (error) {
+        console.error('Error updating visa:', error);
+        res.status(500).json({ error: 'خطأ في تحديث بيانات التأشيرة' });
+    }
+});
+
+// 3. حذف عميل
 app.delete('/api/visas/:id', async (req, res) => {
     try {
         const deletedVisa = await Visa.findByIdAndDelete(req.params.id);
